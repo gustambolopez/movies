@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Obsession - Watch Movie</title>
+    <!-- Inter font for consistency -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet"/>
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@4.2.0/fonts/remixicon.css" rel="stylesheet"/>
+    <link rel="icon" href="https://cdn.jsdelivr.net/gh/gustambolopez/forcdn@main/obsession.png" type="image/x-icon">
+    <style>
+        :root {
+            --primary-bg-dark: #0A1420;
+            --secondary-bg-medium: rgba(26, 42, 74, 0.10);
+            --accent-blue: #00e0ff;
+            --accent-green: #1fe374;
+            --light-blue: #e3e6ea;
+            --text-color-light: #e3e6ea;
+            --text-color-gray: #7a8599;
+            --border-glassy: rgba(97, 137, 230, 0.10);
+            --glass-blur: blur(14px) saturate(120%);
+        }
+        html, body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            width: 100vw;
+            font-family: 'Inter', Arial, sans-serif;
+            background: var(--primary-bg-dark);
+            color: var(--text-color-light);
+            overflow: hidden;
+        }
+        body {
+            min-height: 100vh;
+            min-width: 100vw;
+            position: relative;
+        }
+        #a { /* vanta-background */
+            position: fixed;
+            top: 0; left: 0; width: 100vw; height: 100vh; z-index: -1;
+        }
+        .b { /* player-page-main */
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: stretch;
+            justify-content: flex-start;
+            background: none;
+        }
+        .player-title {
+            display: none;
+        }
+        .c { /* player-controls-container */
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            z-index: 10;
+            background: var(--secondary-bg-medium);
+            backdrop-filter: var(--glass-blur);
+            -webkit-backdrop-filter: var(--glass-blur);
+            padding: 18px 0 10px 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 2px 16px 0 rgba(0,0,0,0.18);
+            border-bottom: 1px solid var(--border-glassy);
+            animation: fadeInDown 0.5s cubic-bezier(.77,0,.18,1) 0.1s both;
+        }
+        @keyframes fadeInDown {
+            from { opacity: 0; transform: translateY(-40px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        /* Segmented API selector */
+        .d { /* api-selector */
+            display: flex;
+            background: rgba(26,42,74,0.18);
+            border-radius: 14px;
+            box-shadow: 0 2px 8px 0 rgba(0,0,0,0.10);
+            overflow: hidden;
+            border: 1px solid var(--border-glassy);
+        }
+        .e { /* api-selector-btn */
+            padding: 12px 28px;
+            background: none;
+            border: none;
+            color: var(--text-color-light);
+            font-family: 'Inter', Arial, sans-serif;
+            font-size: 1.08em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.18s, color 0.18s, box-shadow 0.18s, transform 0.13s;
+            outline: none;
+            border-right: 1px solid rgba(97,137,230,0.08);
+            position: relative;
+        }
+        .e:last-child {
+            border-right: none;
+        }
+        .e.active {
+            background: linear-gradient(90deg, var(--accent-blue) 0%, var(--accent-green) 100%);
+            color: #181a20;
+            box-shadow: 0 2px 12px 0 rgba(31,227,116,0.13);
+            z-index: 2;
+            animation: apiBtnPop 0.32s cubic-bezier(.77,0,.18,1);
+        }
+        @keyframes apiBtnPop {
+            0% { transform: scale(1); }
+            40% { transform: scale(1.13); }
+            100% { transform: scale(1); }
+        }
+        .e:not(.active):hover {
+            background: rgba(0,224,255,0.08);
+            color: var(--accent-blue);
+            transform: scale(1.04);
+        }
+        @media (max-width: 600px) {
+            .e {
+                padding: 10px 10px;
+                font-size: 0.98em;
+            }
+        }
+        .f { /* video-player-container */
+            position: absolute;
+            top: 60px;
+            left: 0;
+            width: 100vw;
+            height: calc(100vh - 60px);
+            background: #000;
+            z-index: 1;
+            border-radius: 0 0 18px 18px;
+            box-shadow: 0 4px 16px 0 rgba(31,227,116,0.13), 0 2px 12px 0 rgba(0,0,0,0.13);
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        #g { /* player-iframe */
+            position: relative;
+            width: 92vw;
+            height: 82vh;
+            max-width: 1280px;
+            max-height: 720px;
+            min-width: 320px;
+            min-height: 180px;
+            margin: 0 auto;
+            border: none;
+            background: #000;
+            z-index: 2;
+            transition: opacity 0.55s cubic-bezier(.77,0,.18,1), transform 0.55s cubic-bezier(.77,0,.18,1);
+            border-radius: 18px;
+            box-shadow: 0 4px 32px 0 rgba(0,224,255,0.10), 0 2px 12px 0 rgba(31,227,116,0.10);
+            animation: fadeInUp 0.7s cubic-bezier(.77,0,.18,1) 0.2s both;
+        }
+        #g.fade {
+            opacity: 0;
+            transform: scale(0.96);
+            transition: opacity 0.55s cubic-bezier(.77,0,.18,1), transform 0.55s cubic-bezier(.77,0,.18,1);
+        }
+        .f:fullscreen {
+            /* Optional: Make player container fullscreen as well */
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 9999;
+            border-radius: 0;
+        }
+        #h { /* movieProgressBar */
+            position: absolute;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            width: 100vw;
+            height: 7px;
+            background: rgba(255, 255, 255, 0.10);
+            border-radius: 0 0 18px 18px;
+            overflow: hidden;
+            z-index: 20;
+        }
+        #i { /* movieProgressBarInner */
+            height: 100%;
+            background: linear-gradient(90deg, var(--accent-blue) 0%, var(--accent-green) 100%);
+            opacity: 0.95;
+            border-radius: 0 0 18px 18px;
+            transition: width 0.25s;
+        }
+        /* Custom Scrollbar Styling */
+        ::-webkit-scrollbar {
+            width: 10px;
+            background: rgba(26, 42, 74, 0.10);
+            border-radius: 8px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(122, 133, 153, 0.25);
+            border-radius: 8px;
+            border: 2px solid rgba(10, 20, 32, 0.2);
+            transition: background 0.2s;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(122, 133, 153, 0.45);
+        }
+        ::-webkit-scrollbar-corner {
+            background: transparent;
+        }
+        html {
+            scrollbar-width: thin;
+            scrollbar-color: rgba(122,133,153,0.25) rgba(26,42,74,0.10);
+        }
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .c {
+                padding: 10px 0 6px 0;
+            }
+            .f {
+                top: 48px;
+                height: calc(100vh - 48px);
+            }
+        }
+        @media (max-width: 480px) {
+            .e { font-size: 0.92em; padding: 8px 6px; }
+            .f { border-radius: 0 0 10px 10px; }
+            #h, #i { border-radius: 0 0 10px 10px; }
+        }
+    </style>
+</head>
+<body>
+    <div id="a"></div>
+    <div class="b">
+        <div class="c">
+            <div class="d" id="j">
+                <button class="e active" data-player="default">Vidora</button>
+                <button class="e" data-player="vidsrc">Vidsrc</button>
+                <button class="e" data-player="embednet">Embed.net</button>
+                <button class="e" data-player="moviesapiclub">MoviesAPI.club</button>
+            </div>
+        </div>
+        <div class="f">
+            <iframe id="g" frameborder="0" allowfullscreen allow="autoplay; fullscreen; picture-in-picture"></iframe>
+            <div id="h"><div id="i" style="width:0%"></div></div>
+        </div>
+    </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/0.158.0/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vanta@0.5.24/dist/vanta.fog.min.js"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            VANTA.FOG({
+              el: "#a",
+              mouseControls: true,
+              touchControls: true,
+              gyroControls: false,
+              minHeight: 200.00,
+              minWidth: 200.00,
+              highlightColor: 0x1a2a4a,
+              midtoneColor: 0x0d1a2d,
+              lowlightColor: 0x03070b,
+              baseColor: 0x0a1420,
+              blurFactor: 0.80,
+              speed: 1.00,
+              zoom: 1.0
+            });
+            const playerUrls = {
+                default:
+                    "https://vidora.su/movie/TMDB_ID?autoplay=false&colour=00ff9d&backbutton=http%3A%2F%2F127.0.0.1%3A3002%2Fc%3A%2FUsers%2FLucy%2FDownloads%2Fstatic%2Findex.html&logo=https%3A%2F%2Fcdn.jsdelivr.net%2Fgh%2Fgustambolopez%2Fforcdn%40main%2Fobsession.png",
+                vidsrc: "https://vidsrc.su/embed/movie/TMDB_ID",
+                embednet: "https://play2.123embed.net/movie/TMDB_ID",
+                moviesapiclub: "https://moviesapi.club/movie/TMDB_ID",
+            };
+            const apiSelector = document.getElementById("j");
+            const playerIframe = document.getElementById("g");
+            let currentTmdbId = null;
+            function setProgressBar(tmdbId, percent) {
+                if (!tmdbId) return;
+                localStorage.setItem(`movie-progress-${tmdbId}`, percent);
+            }
+            function getProgressBar(tmdbId) {
+                return parseInt(localStorage.getItem(`movie-progress-${tmdbId}`) || 0, 10);
+            }
+            function getTmdbIdFromQueryString() {
+                const params = new URLSearchParams(window.location.search);
+                return params.get('id');
+            }
+            async function getMovieTitle(tmdbId) {
+                const TMDB_API_KEY = "2713804610e1e236b1cf44bfac3a7776";
+                const response = await fetch(`https://api.themoviedb.org/3/movie/${tmdbId}?api_key=${TMDB_API_KEY}&language=en-US`);
+                const data = await response.json();
+                return data.title || "Movie Title Not Found";
+            }
+            async function updatePlayerSource(tmdbId, playerKey = "default") {
+                if (!tmdbId) {
+                    playerIframe.src = '';
+                    return;
+                }
+                currentTmdbId = tmdbId;
+                const urlTemplate = playerUrls[playerKey];
+                if (urlTemplate) {
+                    const finalUrl = urlTemplate.replace("TMDB_ID", tmdbId);
+                    playerIframe.classList.add('fade');
+                    setTimeout(() => {
+                        playerIframe.src = finalUrl;
+                        setTimeout(() => playerIframe.classList.remove('fade'), 250);
+                    }, 200);
+                } else {
+                    playerIframe.src = "";
+                }
+            }
+            // Segmented control logic
+            if (apiSelector) {
+                apiSelector.addEventListener('click', async e => {
+                    const btn = e.target.closest('.e');
+                    if (!btn) return;
+                    apiSelector.querySelectorAll('.e').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    const playerKey = btn.dataset.player;
+                    if (currentTmdbId) {
+                        playerIframe.classList.add('fade');
+                        setTimeout(async () => {
+                            await updatePlayerSource(currentTmdbId, playerKey);
+                            setTimeout(() => playerIframe.classList.remove('fade'), 100);
+                        }, 350);
+                    }
+                });
+            }
+            // Progress bar logic
+            function renderProgressBar(tmdbId) {
+                const bar = document.getElementById('i');
+                if (!bar) return;
+                const percent = getProgressBar(tmdbId);
+                bar.style.width = Math.max(0, Math.min(percent, 100)) + '%';
+            }
+            // Simulate progress for demo (remove in prod)
+            function simulateProgress(tmdbId) {
+                let percent = getProgressBar(tmdbId);
+                percent = (percent + 10) % 110;
+                setProgressBar(tmdbId, percent);
+                renderProgressBar(tmdbId);
+            }
+            // Initial load
+            const initialTmdbId = getTmdbIdFromQueryString();
+            if (initialTmdbId) {
+                updatePlayerSource(initialTmdbId);
+                renderProgressBar(initialTmdbId);
+                document.querySelector('.f').addEventListener('click', () => simulateProgress(initialTmdbId));
+            } else {
+                playerIframe.src = '';
+            }
+            window.addEventListener('storage', function(e) {
+                if (e.key && e.key.startsWith('movie-progress-')) {
+                    const id = e.key.replace('movie-progress-', '');
+                    renderProgressBar(id);
+                }
+            });
+        });
+    </script>
+</body>
+</html>
